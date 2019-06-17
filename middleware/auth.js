@@ -13,11 +13,6 @@ function verifyToken(req, res, next) {
     }
 }
 
-// function isAdmin(req,res,next) {
-//     const role = await User.findOne({email : email});
-//     console.log("This is Admin");
-// }
-
 module.exports = {
     verifyToken
 }

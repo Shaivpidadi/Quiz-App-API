@@ -16,6 +16,10 @@ const userSchema = new Schema({
     },
     role:{
         type: String
+    },
+    isVerified: Boolean,
+    token : {
+        type: String
     }
 });
 

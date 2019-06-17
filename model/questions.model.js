@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const QuestionSchema = new Schema({
     question: String,
     question_options: [{
-        answer: String,
+        type: String,
     }],
     correct_answer: String,
     updated_at: { type: Date }
