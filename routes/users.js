@@ -2,11 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const jwtDecode = require('jwt-decode');
-const User = require('../model/users.model');
 
-const crypto = require('crypto');
 
 const userFunction = require('../controller/user.controller');
 const questionFunction = require('../controller/questions.controller.js');

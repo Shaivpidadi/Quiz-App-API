@@ -1,5 +1,7 @@
 const Questions = require('../model/questions.model');
 const jwtDecode = require('jwt-decode');
+const Joi = require('joi');
+const validate = require('../validators/validate');
 
 
 function addQuestions(req, res) {
@@ -14,6 +16,14 @@ function addQuestions(req, res) {
             correct_answer: req.body.correct_answer,
             updated_at: new Date()
         })
+
+        const result = Joi.validate(req.body, validate.AddQuestion);
+        if (result.error){
+            res.status(400).send(result.error.details[0].message);
+            return;
+        }
+
+        console.log(" Question --> ",result.error);
 
         question.save()
             .then(result => {

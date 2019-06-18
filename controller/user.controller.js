@@ -3,9 +3,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const jwtDecode = require('jwt-decode');
 const mailer = require('../services/nodemail');
+const Joi = require('joi');
+
 
 const crypto = require('crypto');
-
+const validate = require('../validators/validate');
 const questionDb = require('./questions.controller.js');
 
 
@@ -34,6 +36,14 @@ function signup(req, res) {
                             token : token
                         });
 
+                        const result = Joi.validate(req.body, validate.Register);
+                        if (result.error){
+                            res.status(400).send(result.error.details[0].message);
+                            return;
+                        }
+
+                        console.log(" Joi Result --> ",result.error);
+
                         user.save()
                             .then( result => {
                                 mailer.mail(req.body.email,link);
@@ -60,6 +70,15 @@ function login(req,res) {
     const user = {
         email: req.body.email,
         password: req.body.password
+    }
+
+    console.log("11");
+
+    const result = Joi.validate(req.body, validate.Login);
+    if (result.error){
+        console.log("12");
+        res.status(400).send(result.error.details[0].message);
+        return;
     }
     checkUser(user,res);
 }
@@ -111,17 +130,22 @@ function accountVerify(req, res) {
         })
 }
 async function checkUser(user,res) {
+    console.log("1");
     const isUserRegistered = await
         isInDb(user.email)
 
     if (isUserRegistered == null){
+        console.log("2");
         res.status(403).send('User Not Found');
     }
 
     else {
+        console.log("3");
         if (isUserRegistered.isVerified === false){
+            console.log("4");
             res.status(403).send('Email Not Verified.');
         }else {
+            console.log("5");
             getAccessToken(user,isUserRegistered,res);
         }
     }
@@ -133,19 +157,24 @@ async function isInDb(email) {
 
 async function getAccessToken(user,registeredUser,res) {
     try {
+        console.log("6");
         const match = await bcrypt.compare(user.password, registeredUser.password);
         if(match) {
+            console.log("7");
             jwt.sign({user, role: registeredUser.role},'quizapisecretkey', (err, token) => {
+                console.log("8");
                 res.json({
                     "access_token" : token
                 })
             })
         }
         else {
+            console.log("9");
             res.status(403).send('Password not matched');
         }
     }
     catch(error) {
+        console.log("10");
         console.log(error.message);
     }
 }
