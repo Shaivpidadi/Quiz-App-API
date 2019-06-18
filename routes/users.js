@@ -21,6 +21,8 @@ router.get('/verify/:key?', userFunction.accountVerify);
 
 router.post('/login/',userFunction.login);
 
+router.use(auth.isTokenAvailable)
+
 router.post('/add/questions',auth.verifyToken, questionFunction.addQuestions);
 
 router.post('/questions',auth.verifyToken,userFunction.findQuestions);

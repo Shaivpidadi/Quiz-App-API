@@ -65,38 +65,24 @@ function login(req,res) {
 }
 
 function findQuestions(req, res) {
-    jwt.verify(req.token,'quizapisecretkey', (err, authData) => {
-        if (err){
-            console.log("Some Error");
-            res.status(403).send('Token Not matched');
-        }
-        else {
-            questionDb.getQuestions()
-                .then(result => {
-                    res.json({
-                        // Fetch Questions from database
-                        message: result
-                    })
-                })
-        }
-    });
+    questionDb.getQuestions()
+        .then(result => {
+            res.json({
+                // Fetch Questions from database
+                message: result
+            })
+        })
 }
 
 function getScore(req, res) {
-    jwt.verify(req.token,'quizapisecretkey', (err, authData) => {
-        if (err){
-            res.status(403).send('Token Not matched');
-        }
-        else {
-            const submittedData = req.body.submitted_data;
-            questionDb.checkScore(submittedData)
-                .then(result => {
-                    res.json({
-                        message: `Your Score is ${result}`
-                    })
-                })
-        }
-    });
+    const submittedData = req.body.submitted_data;
+    questionDb.checkScore(submittedData)
+        .then(result => {
+            mailer.mailResult(req.body.email,result);
+            res.json({
+                message: `Your Score is ${result}`
+            })
+        })
 }
 
 function accountVerify(req, res) {
@@ -146,16 +132,21 @@ async function isInDb(email) {
 }
 
 async function getAccessToken(user,registeredUser,res) {
-    const match = await bcrypt.compare(user.password, registeredUser.password);
-    if(match) {
-        jwt.sign({user, role: registeredUser.role},'quizapisecretkey', (err, token) => {
-            res.json({
-                "access_token" : token
+    try {
+        const match = await bcrypt.compare(user.password, registeredUser.password);
+        if(match) {
+            jwt.sign({user, role: registeredUser.role},'quizapisecretkey', (err, token) => {
+                res.json({
+                    "access_token" : token
+                })
             })
-        })
+        }
+        else {
+            res.status(403).send('Password not matched');
+        }
     }
-    else {
-        res.status(403).send('Password not matched');
+    catch(error) {
+        console.log(error.message);
     }
 }
 
