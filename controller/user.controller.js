@@ -41,9 +41,6 @@ function signup(req, res) {
                             res.status(400).send(result.error.details[0].message);
                             return;
                         }
-
-                        console.log(" Joi Result --> ",result.error);
-
                         user.save()
                             .then( result => {
                                 mailer.mail(req.body.email,link);
@@ -72,11 +69,8 @@ function login(req,res) {
         password: req.body.password
     }
 
-    console.log("11");
-
     const result = Joi.validate(req.body, validate.Login);
     if (result.error){
-        console.log("12");
         res.status(400).send(result.error.details[0].message);
         return;
     }
@@ -95,9 +89,12 @@ function findQuestions(req, res) {
 
 function getScore(req, res) {
     const submittedData = req.body.submitted_data;
+    const decode = jwtDecode(req.token);
+    const email = decode.user.email;
+
     questionDb.checkScore(submittedData)
         .then(result => {
-            mailer.mailResult(req.body.email,result);
+            mailer.mailResult(email,result);
             res.json({
                 message: `Your Score is ${result}`
             })
@@ -130,22 +127,17 @@ function accountVerify(req, res) {
         })
 }
 async function checkUser(user,res) {
-    console.log("1");
     const isUserRegistered = await
         isInDb(user.email)
 
     if (isUserRegistered == null){
-        console.log("2");
         res.status(403).send('User Not Found');
     }
 
     else {
-        console.log("3");
         if (isUserRegistered.isVerified === false){
-            console.log("4");
             res.status(403).send('Email Not Verified.');
         }else {
-            console.log("5");
             getAccessToken(user,isUserRegistered,res);
         }
     }
@@ -157,24 +149,19 @@ async function isInDb(email) {
 
 async function getAccessToken(user,registeredUser,res) {
     try {
-        console.log("6");
         const match = await bcrypt.compare(user.password, registeredUser.password);
         if(match) {
-            console.log("7");
             jwt.sign({user, role: registeredUser.role},'quizapisecretkey', (err, token) => {
-                console.log("8");
                 res.json({
                     "access_token" : token
                 })
             })
         }
         else {
-            console.log("9");
             res.status(403).send('Password not matched');
         }
     }
     catch(error) {
-        console.log("10");
         console.log(error.message);
     }
 }

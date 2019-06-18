@@ -23,11 +23,8 @@ function addQuestions(req, res) {
             return;
         }
 
-        console.log(" Question --> ",result.error);
-
         question.save()
             .then(result => {
-                console.log("result",result);
                 res.status(201).json({
                     message: 'Question has been added successfully'
                 });
@@ -41,7 +38,10 @@ function addQuestions(req, res) {
 async function getQuestions()
 {
     return await
-        Questions.find({},{correct_answer:0, updated_at:0, __v:0});
+        Questions.aggregate(
+            [ { $sample: { size: 5 } } ]
+        );
+        // Questions.find({},{correct_answer:0, updated_at:0, __v:0});
 }
 
 async function checkScore(data)
